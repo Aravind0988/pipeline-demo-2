@@ -1,10 +1,11 @@
+```groovy
 pipeline {
     agent any
 
     environment {
         GITHUB_CREDS = credentials('github-new-creds')
         MAVEN_HOME   = tool name: 'maven'
-        PATH         = "${JAVA_HOME}/bin:${PATH}"
+        PATH         = "${JAVA_HOME}\\bin;${PATH}"
     }
 
     stages {
@@ -17,14 +18,21 @@ pipeline {
 
         stage('Build & Deploy') {
             steps {
-                configFileProvider([configFile(fileId: 'maven-github-settings', variable: 'MAVEN_SETTINGS')]) {
-                    sh """
-                        export GH_USER=${GITHUB_CREDS_USR}
-                        export GH_TOKEN=${GITHUB_CREDS_PSW}
+                configFileProvider([
+                    configFile(
+                        fileId: 'maven-github-settings',
+                        variable: 'MAVEN_SETTINGS'
+                    )
+                ]) {
+                    bat '''
+                        echo Building Maven project...
 
-                        ${MAVEN_HOME}/bin/mvn -s $MAVEN_SETTINGS -B clean package
-                        ${MAVEN_HOME}/bin/mvn -s $MAVEN_SETTINGS -B deploy
-                    """
+                        "%MAVEN_HOME%\\bin\\mvn.cmd" -s "%MAVEN_SETTINGS%" -B clean package
+
+                        echo Deploying to GitHub Packages...
+
+                        "%MAVEN_HOME%\\bin\\mvn.cmd" -s "%MAVEN_SETTINGS%" -B deploy
+                    '''
                 }
             }
         }
@@ -34,8 +42,10 @@ pipeline {
         success {
             echo "✅ Build and deployment to GitHub Packages completed successfully."
         }
+
         failure {
             echo "❌ Pipeline failed. Check the console output for details."
         }
     }
 }
+```
