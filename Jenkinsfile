@@ -19,7 +19,7 @@ pipeline {
 
                 withCredentials([
                     usernamePassword(
-                        credentialsId: 'github-new-creds',
+                        credentialsId: 'github-packages-cred',
                         usernameVariable: 'GH_USER',
                         passwordVariable: 'GH_TOKEN'
                     )
