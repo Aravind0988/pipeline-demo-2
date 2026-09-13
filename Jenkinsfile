@@ -2,9 +2,8 @@ pipeline {
     agent any
 
     environment {
-        GITHUB_CREDS = credentials('github-packages-cred')
-        MAVEN_HOME   = tool name: 'maven'
-        PATH         = "${JAVA_HOME}\\bin;${PATH}"
+        MAVEN_HOME = tool name: 'maven'
+        PATH = "${JAVA_HOME}\\bin;${PATH}"
     }
 
     stages {
@@ -17,26 +16,38 @@ pipeline {
 
         stage('Build & Deploy') {
             steps {
-                configFileProvider([
-                    configFile(
-                        fileId: 'maven-github-settings',
-                        variable: 'MAVEN_SETTINGS'
+
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: 'github-new-creds',
+                        usernameVariable: 'GH_USER',
+                        passwordVariable: 'GH_TOKEN'
                     )
                 ]) {
-                    bat '''
-                        echo ========================================
-                        echo        BUILDING MAVEN PROJECT
-                        echo ========================================
 
-                        "%MAVEN_HOME%\\bin\\mvn.cmd" -s "%MAVEN_SETTINGS%" -B clean package
+                    configFileProvider([
+                        configFile(
+                            fileId: 'maven-github-settings',
+                            variable: 'MAVEN_SETTINGS'
+                        )
+                    ]) {
 
-                        echo.
-                        echo ========================================
-                        echo       DEPLOYING TO GITHUB PACKAGES
-                        echo ========================================
+                        bat '''
+                            echo ========================================
+                            echo       BUILDING AND DEPLOYING
+                            echo ========================================
 
-                        "%MAVEN_HOME%\\bin\\mvn.cmd" -s "%MAVEN_SETTINGS%" -B deploy
-                    '''
+                            "%MAVEN_HOME%\\bin\\mvn.cmd" ^
+                                -s "%MAVEN_SETTINGS%" ^
+                                -B ^
+                                clean deploy
+
+                            echo.
+                            echo ========================================
+                            echo          DEPLOY COMPLETED
+                            echo ========================================
+                        '''
+                    }
                 }
             }
         }
@@ -44,11 +55,11 @@ pipeline {
 
     post {
         success {
-            echo "Build and deployment to GitHub Packages completed successfully."
+            echo 'Build and deployment to GitHub Packages completed successfully.'
         }
 
         failure {
-            echo "Pipeline failed. Check the console output for details."
+            echo 'Pipeline failed. Check the console output for details.'
         }
     }
 }
