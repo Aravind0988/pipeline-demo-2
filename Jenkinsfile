@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        GITHUB_CREDS = credentials('github-cred')
+        GITHUB_CREDS = credentials('github-new-creds')
         MAVEN_HOME   = tool name: 'maven'
         PATH         = "${JAVA_HOME}/bin:${PATH}"
     }
