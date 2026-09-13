@@ -13,7 +13,7 @@
         <repository>
             <id>github</id>
             <name>GitHub Packages</name>
-            <url>https://maven.pkg.github.com/Irfaanpk/pipeline-demo</url>
+            <url>https://maven.pkg.github.com/Aravind0988/pipeline-demo-2</url>
         </repository>
     </distributionManagement>
 
